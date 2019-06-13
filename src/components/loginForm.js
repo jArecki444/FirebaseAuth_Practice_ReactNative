@@ -1,11 +1,29 @@
 import React, { Component } from 'react';
+import { Text, StyleSheet } from 'react-native';
+import firebase from 'firebase';
 import {
   Button, Card, CardItem, Input
 } from './common';
 
 // eslint-disable-next-line react/prefer-stateless-function
 class LoginForm extends Component {
-  state = { email: '', password: '' };
+  state = { email: '', password: '', error: '' };
+
+  onButtonPress() {
+    const { email, password } = this.state;
+    this.setState({ error: '' });
+    firebase
+      .auth()
+      .createUserWithEmailAndPassword(email, password)
+      .catch(() => {
+        firebase
+          .auth()
+          .signInWithEmailAndPassword(email, password)
+          .catch(() => {
+            this.setState({ error: 'Authentication Failed' });
+          });
+      });
+  }
 
   render() {
     return (
@@ -27,16 +45,21 @@ class LoginForm extends Component {
             onChangeText={password => this.setState({ password })}
           />
         </CardItem>
+        <Text style={styles.errorTextStyle}>{this.state.error}</Text>
         <CardItem>
-          <Button>Log in</Button>
+          <Button onPress={this.onButtonPress.bind(this)}>Log in</Button>
         </CardItem>
       </Card>
     );
   }
 }
 
-// styles = Stylesheet.create({
-
-// })
+const styles = StyleSheet.create({
+  errorTextStyle: {
+    fontSize: 20,
+    alignSelf: 'center',
+    color: 'red'
+  }
+});
 
 export default LoginForm;
